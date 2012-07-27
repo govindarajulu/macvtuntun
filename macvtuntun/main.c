@@ -6,20 +6,17 @@
 #include <assert.h>
 #include <getopt.h>
 #include <tun.h>
-#define MAX_NAME 20
-int tcpudp_fd=-1;
-int port=4500;
-int udp=0;
-char tun_name[MAX_NAME];
-const char *short_opt="hut:p:";
-const struct option long_option[]={
-    {"help",0,NULL,'h'},
-    {"udp",0,NULL,'u'},
-    {"tun",1,NULL,'t'},
-    {"port",1,NULL,'p'}
-};
+#include <main.h>
+
 void process_arg(int argc, char* argv[]){
     int next_arg;
+    const struct option long_option[]={
+        {"help",0,NULL,'h'},
+        {"udp",0,NULL,'u'},
+        {"tun",1,NULL,'t'},
+        {"port",1,NULL,'p'}
+    };
+    const char *short_opt="hut:p:";
     do{
         next_arg=getopt_long(argc,argv,short_opt,long_option,NULL);
         switch(next_arg)

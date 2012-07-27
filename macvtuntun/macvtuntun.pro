@@ -6,5 +6,6 @@ SOURCES += main.c \
     tun.c
 
 HEADERS += \
-    tun.h
+    tun.h \
+    main.h
 

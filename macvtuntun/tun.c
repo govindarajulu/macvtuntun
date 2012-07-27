@@ -11,6 +11,8 @@
 #include <linux/types.h>
 #include <asm-generic/ioctl.h>
 #include <tun.h>
+#include <main.h>
+
 int tun_alloc(char *dev, int flags){
     int fd;
     int err;
