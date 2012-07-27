@@ -3,9 +3,11 @@ CONFIG += console
 CONFIG -= qt
 
 SOURCES += main.c \
-    tun.c
+    tun.c \
+    tcpudp.c
 
 HEADERS += \
     tun.h \
-    main.h
+    main.h \
+    tcpudp.h
 
