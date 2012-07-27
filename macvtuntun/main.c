@@ -8,6 +8,7 @@
 #include <netdb.h>
 #include <main.h>
 #include <tun.h>
+#include <tcpudp.h>
 
 void process_arg(int argc, char* argv[]){
     port=4500;
@@ -46,16 +47,18 @@ usage:
             break;
         case 'd':
             daddress=gethostbyname(optarg);
+            printf("daddress=%s\n",optarg);
             if(daddress==NULL){
-                perror("gethostnamebyhost");
+                perror("gethostbyname");
                 printf("could not resolved hostname\n");
                 exit(-1);
             }
             break;
         case 's':
+            printf("saddress=%s\n",optarg);
             saddress=gethostbyname(optarg);
             if(saddress==NULL){
-                perror("gethostnamebyhost");
+                perror("gethostbyname");
                 printf("could not resolved hostname\n");
                 exit(-1);
             }
@@ -81,5 +84,6 @@ int main(int argc, char* argv[])
 {
     process_arg(argc,argv);
     printf("port=%d, tun name = %s",port,tun_name);
+    open_socket();
     return 0;
 }
