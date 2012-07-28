@@ -10,6 +10,7 @@
 #include <tun.h>
 #include <tcpudp.h>
 #include <arpa/ftp.h>
+#include <linux/if_tun.h>
 void process_arg(int argc, char* argv[]){
     int next_arg;
     struct hostent * daddress;
@@ -27,7 +28,7 @@ void process_arg(int argc, char* argv[]){
     udp=0;
     tcpudp_fd=-1;
     tun_fd=-1;
-    tun_name=NULL;
+    strcpy(tun_name,"tap");
 
     memset(&saddr_in,0,sizeof(saddr_in));
     saddr_in.sin_family=AF_INET;
@@ -57,7 +58,6 @@ usage:
             break;
         case 'd':
             daddress=gethostbyname(optarg);
-            printf("daddress=%s\n",optarg);
             if(daddress==NULL){
                 perror("gethostbyname");
                 printf("could not resolved hostname\n");
@@ -67,7 +67,6 @@ usage:
 
             break;
         case 's':
-            printf("saddress=%s\n",optarg);
             saddress=gethostbyname(optarg);
             if(saddress==NULL){
                 perror("gethostbyname");
@@ -77,7 +76,7 @@ usage:
             bcopy(saddress->h_addr_list[0],&saddr_in.sin_addr.s_addr,saddress->h_length);
             break;
         case 't':
-            tun_name=malloc(strlen(optarg)+1);
+            //tun_name=malloc(strlen(optarg)+1);
             strcpy(tun_name,optarg);
             break;
         case 'p':
@@ -93,13 +92,19 @@ usage:
         }
     }while(next_arg!=-1);
     daddr_in.sin_port=htons(port);
-    printf("%d",port);
 }
 
 int main(int argc, char* argv[])
 {
     process_arg(argc,argv);
-    open_socket();
-
+    tcpudp_fd=open_socket();
+    assert(tcpudp_fd>0);
+    tun_fd=tun_alloc(tun_name,IFF_TAP);
+    assert(tun_fd>0);
+    get_macaddr();
+    sendpkt(tcpudp_fd,tun_mac,6);
+    getack();
+    printf("before sleep\n");
+    sleep(1000);
     return 0;
 }

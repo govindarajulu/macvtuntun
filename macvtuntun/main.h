@@ -9,6 +9,7 @@ int tcpudp_fd;
 int tun_fd;
 int port;
 int udp;
-char* tun_name;
+char tun_name[32];
+char tun_mac[6];
 struct sockaddr_in daddr_in;
 struct sockaddr_in saddr_in;
