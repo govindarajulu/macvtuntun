@@ -9,14 +9,12 @@
 #include <main.h>
 #include <tun.h>
 #include <tcpudp.h>
-
+#include <arpa/ftp.h>
 void process_arg(int argc, char* argv[]){
-    port=4500;
-    udp=0;
-    tcpudp_fd=-1;
-    tun_fd=-1;
-    tun_name=NULL;
+
     int next_arg;
+    struct hostent * daddress;
+    struct hostent * saddress;
     const struct option long_option[]={
         {"port",1,NULL,'p'},
         {"udp",0,NULL,'u'},
@@ -26,6 +24,19 @@ void process_arg(int argc, char* argv[]){
         {"saddr",1,NULL,'s'}
     };
     const char *short_opt="p:ut:hd:s:";
+    port=4500;
+    udp=0;
+    tcpudp_fd=-1;
+    tun_fd=-1;
+    tun_name=NULL;
+
+    memset(&saddr_in,0,sizeof(saddr_in));
+    saddr_in.sin_family=AF_INET;
+    saddr_in.sin_port=htons(0);
+
+    memset(&daddr_in,0,sizeof(daddr_in));
+
+    daddr_in.sin_family=AF_INET;
     do{
         next_arg=getopt_long(argc,argv,short_opt,long_option,NULL);
         switch(next_arg)
@@ -53,6 +64,8 @@ usage:
                 printf("could not resolved hostname\n");
                 exit(-1);
             }
+            bcopy(daddress->h_addr_list[0],&daddr_in.sin_addr.s_addr,daddress->h_length);
+
             break;
         case 's':
             printf("saddress=%s\n",optarg);
@@ -62,6 +75,7 @@ usage:
                 printf("could not resolved hostname\n");
                 exit(-1);
             }
+            bcopy(saddress->h_addr_list[0],&saddr_in.sin_addr.s_addr,saddress->h_length);
             break;
         case 't':
             tun_name=malloc(strlen(optarg)+1);
@@ -69,6 +83,7 @@ usage:
             break;
         case 'p':
             port=atoi(optarg);
+            daddr_in.sin_port=htons(port);
         case -1:
             break;
         case '?':

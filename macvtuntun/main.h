@@ -10,6 +10,5 @@ int tun_fd;
 int port;
 int udp;
 char* tun_name;
-struct hostent * daddress;
-struct hostent * saddress;
-struct sockaddr_in peeraddr_in;
+struct sockaddr_in daddr_in;
+struct sockaddr_in saddr_in;

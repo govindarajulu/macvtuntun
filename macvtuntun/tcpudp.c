@@ -12,18 +12,12 @@
 int open_socket()
 {
     int fd,cfd;
-    struct sockaddr_in saddr_in;
-    memset(&saddr_in,0,sizeof(saddr_in));
-    saddr_in.sin_family=AF_INET;
-    saddr_in.sin_port=htons(4444);
-    bcopy(saddress->h_addr_list[0],&saddr_in.sin_addr.s_addr,saddress->h_length);
-    printf("saddr=%s\n",inet_ntoa(*(struct in_addr*)saddress->h_addr_list[0]));
 
-    memset(&peeraddr_in,0,sizeof(peeraddr_in));
-    peeraddr_in.sin_family=AF_INET;
-    peeraddr_in.sin_port=htons(port);
-    bcopy(daddress->h_addr_list[0],&peeraddr_in.sin_addr.s_addr,daddress->h_length);
-    printf("daddr=%s\n",inet_ntoa(*(struct in_addr*)daddress->h_addr_list[0]));
+
+
+    printf("saddr=%s\n",inet_ntoa(saddr_in.sin_addr));
+    printf("daddr=%s\n",inet_ntoa(daddr_in.sin_addr));
+
     if(udp){
 
     }
@@ -37,7 +31,7 @@ int open_socket()
             perror("bind");
             exit(-1);
         }
-        cfd=connect(fd,(struct sockaddr*)&peeraddr_in,sizeof(struct sockaddr));
+        cfd=connect(fd,(struct sockaddr*)&daddr_in,sizeof(struct sockaddr));
         if(cfd==-1){
             perror("connect");
             exit(-1);
