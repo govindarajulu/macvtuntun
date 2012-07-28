@@ -11,7 +11,6 @@
 #include <tcpudp.h>
 #include <arpa/ftp.h>
 void process_arg(int argc, char* argv[]){
-
     int next_arg;
     struct hostent * daddress;
     struct hostent * saddress;
@@ -35,8 +34,8 @@ void process_arg(int argc, char* argv[]){
     saddr_in.sin_port=htons(0);
 
     memset(&daddr_in,0,sizeof(daddr_in));
-
     daddr_in.sin_family=AF_INET;
+
     do{
         next_arg=getopt_long(argc,argv,short_opt,long_option,NULL);
         switch(next_arg)
@@ -83,7 +82,7 @@ usage:
             break;
         case 'p':
             port=atoi(optarg);
-            daddr_in.sin_port=htons(port);
+            break;
         case -1:
             break;
         case '?':
@@ -93,12 +92,14 @@ usage:
             break;
         }
     }while(next_arg!=-1);
+    daddr_in.sin_port=htons(port);
+    printf("%d",port);
 }
 
 int main(int argc, char* argv[])
 {
     process_arg(argc,argv);
-    printf("port=%d, tun name = %s",port,tun_name);
     open_socket();
+
     return 0;
 }

@@ -12,12 +12,8 @@
 int open_socket()
 {
     int fd,cfd;
-
-
-
-    printf("saddr=%s\n",inet_ntoa(saddr_in.sin_addr));
-    printf("daddr=%s\n",inet_ntoa(daddr_in.sin_addr));
-
+    printf("using source IP address: %s:%d\n",inet_ntoa(saddr_in.sin_addr),ntohs(saddr_in.sin_port));
+    printf("connecting to macvtun server: %s:%d\n",inet_ntoa(daddr_in.sin_addr),ntohs(daddr_in.sin_port));
     if(udp){
 
     }
@@ -36,9 +32,6 @@ int open_socket()
             perror("connect");
             exit(-1);
         }
-
-
     }
-
     return fd;
 }
