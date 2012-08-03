@@ -10,4 +10,4 @@ HEADERS += \
     tun.h \
     main.h \
     tcpudp.h
-
+LIBS += -pthread

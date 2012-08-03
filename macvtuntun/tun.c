@@ -12,6 +12,7 @@
 #include <asm-generic/ioctl.h>
 #include <tun.h>
 #include <main.h>
+#include <tcpudp.h>
 
 int tun_alloc(char *dev, int flags){
     int fd;
@@ -33,4 +34,17 @@ int tun_alloc(char *dev, int flags){
     }
     strcpy(dev,ifr.ifr_ifrn.ifrn_name);
     return fd;
+}
+
+void writepktotun(){
+    int size;
+    if((size=write(tun_fd,recvmsgdata,1000))<0){
+        perror("write");
+        exit(-1);
+    }
+    printf("write siz=%d",size);
+}
+
+void* read_from_if(void* none){
+    return none;
 }

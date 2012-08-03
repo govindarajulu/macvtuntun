@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <netdb.h>
 #include <main.h>
-
+#include <tcpudp.h>
 int open_socket()
 {
     int fd,cfd;
@@ -123,4 +123,51 @@ ssize_t recvpkt(int fd,void* data, size_t len){
         }
     }
     return size;
+}
+
+ssize_t recvmsgpkt(int fd){
+    ssize_t pktsize=-1,recvsize=0;
+    if(udp){
+
+    }else{
+        recvsize=recvmsg(fd,&recvmsghdr,0);
+        if(recvsize<0){
+            perror("recvmsg");
+            exit(-1);
+        }
+        //recvsize=recvsize-recvmsghdr.msg_iov->iov_len;
+        while((unsigned)recvsize<sizeof(recvmsglen)){
+            int i=-1;
+            i=read(fd,&((char*)&recvmsglen)[recvsize],sizeof(recvmsglen)-recvsize);
+            if(i==-1){
+                perror("recvmsg");
+                exit(-1);
+            }
+            recvsize=recvsize+i;
+            printf("packetsize=%d,receved =%d\n",pktsize,recvsize);
+        }
+        pktsize=*(u_int16_t*)recvmsghdr.msg_iov->iov_base;
+        pktsize=ntohs(pktsize);
+        if(pktsize>MAX_PKT){
+            printf("malformat packet(size=%d). pkt length greater than %d\n",pktsize,MAX_PKT);
+            exit(-1);
+        }
+        recvsize=recvsize-sizeof(recvmsglen);
+        printf("packetsize=%d,receved =%d\n",pktsize,recvsize);
+        while(recvsize<pktsize){
+            int i=-1;
+            i=read(fd,&recvmsgdata[recvsize],pktsize-recvsize);
+            if(i==-1){
+                perror("recvmsg");
+                exit(-1);
+            }
+            recvsize=recvsize+i;
+            printf("packetsize=%d,receved =%d\n",pktsize,recvsize);
+        }
+    }
+    return recvsize;
+}
+
+void* read_from_sock(void* none){
+    return none;
 }

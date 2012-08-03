@@ -92,6 +92,24 @@ usage:
         }
     }while(next_arg!=-1);
     daddr_in.sin_port=htons(port);
+
+    recvmsghdr.msg_name=(void*)&daddr_in;
+    recvmsghdr.msg_namelen=sizeof(daddr_in);
+    recvmsghdr.msg_iov=recviovec;
+    recvmsghdr.msg_iovlen=2;
+    recviovec[0].iov_base=&recvmsglen;
+    recviovec[0].iov_len=sizeof(recvmsglen);
+    recviovec[1].iov_base=&recvmsgdata;
+    recviovec[1].iov_len=sizeof(recvmsgdata);
+
+    sendmsghdr.msg_name=(void*)&saddr_in;
+    sendmsghdr.msg_namelen=sizeof(saddr_in);
+    sendmsghdr.msg_iov=sendiovec;
+    sendmsghdr.msg_iovlen=2;
+    sendiovec[0].iov_base=&sendmsglen;
+    sendiovec[0].iov_len=sizeof(sendmsglen);
+    sendiovec[1].iov_base=&sendmsgdata;
+    sendiovec[1].iov_len=sizeof(sendmsgdata);
 }
 
 int main(int argc, char* argv[])
@@ -104,7 +122,23 @@ int main(int argc, char* argv[])
     get_macaddr();
     sendpkt(tcpudp_fd,tun_mac,6);
     getack();
+
+    if(pthread_create(&pt_read_from_if,NULL,read_from_if,NULL)!=0){
+        perror("pthread_create");
+        exit(-1);
+    }
+    if(pthread_create(&pt_read_from_sock,NULL,read_from_sock,NULL)!=0){
+        perror("pthread_create");
+        exit(-1);
+    }
     printf("before sleep\n");
+
+    while(1){
+        recvmsgpkt(tcpudp_fd);
+        writepktotun();
+        //recvmsgdata[recvmsgdatalen]="\n";
+        //printf("%s",recvmsgdata);
+    }
     sleep(1000);
     return 0;
 }
