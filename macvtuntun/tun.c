@@ -36,15 +36,16 @@ int tun_alloc(char *dev, int flags){
     return fd;
 }
 
-void writepktotun(){
-    int size;
-    if((size=write(tun_fd,recvmsgdata,1000))<0){
-        perror("write");
-        exit(-1);
-    }
-    printf("write siz=%d",size);
-}
-
 void* read_from_if(void* none){
+    int size;
+    while(1){
+        size=cread(tun_fd,sendpktdata.data,MAX_PKT);
+        if(size>MAX_PKT){
+            printf("size received is greater then MAX_PKT\n");
+            exit(-1);
+        }
+        sendpktdata.len=htonl(size);
+        write_n(tcpudp_fd,(char*)&sendpktdata,size+4);
+    }
     return none;
 }
