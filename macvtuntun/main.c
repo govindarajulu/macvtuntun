@@ -11,11 +11,9 @@
 #include <tcpudp.h>
 #include <arpa/ftp.h>
 #include <linux/if_tun.h>
-
-
-
-
+#include <server.h>
 void process_arg(int argc, char* argv[]){
+    int port;
     int next_arg;
     struct hostent * daddress;
     struct hostent * saddress;
@@ -24,17 +22,19 @@ void process_arg(int argc, char* argv[]){
         {"tun",1,NULL,'t'},
         {"help",0,NULL,'h'},
         {"daddr",1,NULL,'d'},
-        {"saddr",1,NULL,'s'}
+        {"saddr",1,NULL,'s'},
+        {"serv",1,NULL,'e'}
     };
-    const char *short_opt="p:t:hd:s:";
+    const char *short_opt="p:t:hd:s:e:";
     port=4500;
     tcpudp_fd=-1;
     tun_fd=-1;
+    server=0;
     strcpy(tun_name,"tap");
 
     memset(&saddr_in,0,sizeof(saddr_in));
     saddr_in.sin_family=AF_INET;
-    saddr_in.sin_port=htons(0);
+
 
     memset(&daddr_in,0,sizeof(daddr_in));
     daddr_in.sin_family=AF_INET;
@@ -74,11 +74,15 @@ usage:
             bcopy(saddress->h_addr_list[0],&saddr_in.sin_addr.s_addr,saddress->h_length);
             break;
         case 't':
-            //tun_name=malloc(strlen(optarg)+1);
             strcpy(tun_name,optarg);
             break;
         case 'p':
             port=atoi(optarg);
+            break;
+        case 'e':
+            server=1;
+            strcpy(ifname,optarg);
+
             break;
         case -1:
             break;
@@ -90,6 +94,11 @@ usage:
         }
     }while(next_arg!=-1);
     daddr_in.sin_port=htons(port);
+    if(server){
+        saddr_in.sin_port=htons(4500);
+    }else{
+        saddr_in.sin_port=htons(0);
+    }
 }
 
 int main(int argc, char* argv[])
@@ -97,6 +106,8 @@ int main(int argc, char* argv[])
     process_arg(argc,argv);
     tcpudp_fd=open_socket();
     assert(tcpudp_fd>0);
+    if(server)
+        server_accept(NULL);
     tun_fd=tun_alloc(tun_name,IFF_TAP);
     assert(tun_fd>0);
     get_macaddr();

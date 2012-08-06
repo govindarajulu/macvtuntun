@@ -12,6 +12,7 @@
 #include <netdb.h>
 #include <main.h>
 #include <tcpudp.h>
+#include <linux/if_ether.h>
 int cread(int fd, char *buf, int n){
 
     int nread;
@@ -76,10 +77,12 @@ int open_socket()
         perror("bind");
         exit(-1);
     }
-    cfd=connect(fd,(struct sockaddr*)&daddr_in,sizeof(struct sockaddr));
-    if(cfd==-1){
-        perror("connect");
-        exit(-1);
+    if(!server){
+        cfd=connect(fd,(struct sockaddr*)&daddr_in,sizeof(struct sockaddr));
+        if(cfd==-1){
+            perror("connect");
+            exit(-1);
+        }
     }
     return fd;
 }
@@ -125,16 +128,37 @@ void getack(){
 }
 
 void* read_from_sock(void* none){
+    struct pktdata_t recvpktdata;
     unsigned int size;
     while(1){
         read_n(tcpudp_fd,(char*)&recvpktdata.len,4);
         size=ntohl(recvpktdata.len);
         if(size>MAX_PKT){
             printf("size received is %d,greater then MAX_PKT\n",size);
-            exit(-1);
+            pthread_cancel(pt_read_from_if);
+            pthread_exit(none);
         }
+        printf("read %d bytes from tcp sock\n",size);
         read_n(tcpudp_fd,recvpktdata.data,size);
         write_n(tun_fd,recvpktdata.data,size);
     }
     return none;
+}
+
+int getifindex(char* ifname){
+    int fd;
+    fd=socket(AF_PACKET,SOCK_RAW,htons(ETH_P_ALL));
+    if(fd<0){
+        fprintf(stderr,"ifname:%s ",ifname);
+        perror("getifindex::socket");
+        return fd;
+    }
+    struct ifreq interface;
+    strcpy(interface.ifr_ifrn.ifrn_name,ifname);
+    if(ioctl(fd,SIOCGIFINDEX,&interface)==-1) {
+        fprintf(stderr,"ifname:%s ",ifname);
+        perror("getifname::ioctl");
+        return -1;
+    }
+    return interface.ifr_ifru.ifru_ivalue;
 }

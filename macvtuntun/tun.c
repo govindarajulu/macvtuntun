@@ -37,15 +37,24 @@ int tun_alloc(char *dev, int flags){
 }
 
 void* read_from_if(void* none){
+    struct pktdata_t sendpktdata;
     int size;
     while(1){
-        size=cread(tun_fd,sendpktdata.data,MAX_PKT);
+        size=cread(tun_fd,(char*)&sendpktdata,MAX_PKT);
         if(size>MAX_PKT){
-            printf("size received is greater then MAX_PKT\n");
+            fprintf(stderr,"size received is %d, greater then MAX_PKT\n",size);
             exit(-1);
+            pthread_cancel(pt_read_from_sock);
+            pthread_exit(NULL);
         }
         sendpktdata.len=htonl(size);
+        printf("read %d bytes from tap\n",size);
+        int i;
+         for(i=0;i<size;i++){
+             printf("%2x",(unsigned char)sendpktdata.data[i]);
+        }
+        printf("\n");
         write_n(tcpudp_fd,(char*)&sendpktdata,size+4);
     }
-    return none;
+    pthread_exit(none);
 }
